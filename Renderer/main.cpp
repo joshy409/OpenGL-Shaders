@@ -2,6 +2,7 @@
 #include "render.h"
 #include "glm/glm.hpp"
 #include "glm/ext.hpp"
+#define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 #include "tiny_obj_loader.h"
 
 #include "Windows.h"
@@ -10,7 +11,6 @@
 #include <iostream>
 
 
-#define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 
 
 float randFloat();
@@ -94,10 +94,10 @@ int main() {
 	//std::cout << attrib.vertices.size() << std::endl; //24
 	//std::cout << shapes[0].mesh.indices.size() << std::endl; //36
 	//
-	///*for (size_t i = 0; i < attrib.vertices.size(); i++)
+	//for (size_t i = 0; i < attrib.vertices.size(); i++)
 	//{
 	//	std::cout << attrib.vertices[i] << std::endl;
-	//}*/
+	//}
 	//vertex* a = convertVertices(attrib.vertices);
 	//unsigned int* b = convertIndices(shapes[0].mesh.indices);
 	////geometry cube = makeGeometry(convertVertices(attrib.vertices), attrib.vertices.size() / 3, (unsigned int *)shapes[0].mesh.indices.data(), shapes[0].mesh.indices.size());
@@ -141,13 +141,15 @@ int main() {
 		"layout (location = 1) uniform mat4 view;\n"
 		"layout (location = 2) uniform mat4 model;\n"
 		"out vec4 vColor;\n"
-		"void main() {gl_Position = proj * view * model * position; vColor = vertColor;}";
+		"out vec2 vUV;\n"
+		"void main() {gl_Position = proj * view * model * position; vColor = vertColor; vUV = uv;}";
 
 	const char * basicFrag =
-		"#version 330\n"
-		"in vec4 vColor;\n"
+		"#version 430\n"
+		"layout (location = 3) uniform sampler2D albedo; \n"
+		"in vec2 vUV;\n"
 		"out vec4 fragColor;\n"
-		"void main() {fragColor = vec4(1.0, 0.0, 0.0, 1.0);}";
+		"void main() {fragColor = texture(albedo, vUV);}";
 
 	shader basicShader = makeShader(basicVert, basicFrag);
 
@@ -159,16 +161,17 @@ int main() {
 	setUniform(basicShader, 0, camProj);
 	setUniform(basicShader, 1, camView);
 	setUniform(basicShader, 2, triModel);
+	setUniform(basicShader, 2, texture, 0);
 
 	int i = 0;
 	while (!game.shouldClose()) {
 		game.tick();
 		game.clear();
 
-		assert(glGetError() == GL_NO_ERROR);
+		//assert(glGetError() == GL_NO_ERROR);
 
-		//triModel = glm::rotate(triModel, glm::radians(5.f), glm::vec3(0, 1, 0));
-		//setUniform(basicShader, 2, triModel);
+		triModel = glm::rotate(triModel, glm::radians(5.f), glm::vec3(0, 1, 0));
+		setUniform(basicShader, 2, triModel);
 
 
 		/*if (i > 50) {

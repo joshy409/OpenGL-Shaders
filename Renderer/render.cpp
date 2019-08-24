@@ -29,8 +29,8 @@ geometry makeGeometry(vertex * verts, size_t vertCount, unsigned * indices, size
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)0);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)16);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)32);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(sizeof(vertex::pos)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(sizeof(vertex::pos) + sizeof(vertex::color)));
 
 	//unbind buffers (in a SPECIFIC order)
 	glBindVertexArray(0);
@@ -126,7 +126,7 @@ texture makeTexture(unsigned width, unsigned height, unsigned channels, const un
 		oglFormat = GL_RGBA;
 		break;
 	default:
-		//TODO: fatal erro, halt the program
+		//TODO: fatal error, halt the program
 		break;
 	}
 
