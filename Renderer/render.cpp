@@ -109,10 +109,11 @@ void setUniform(const shader & shad, GLuint location, const texture & value, int
 	glProgramUniform1i(shad.program, location, textureSlot);
 }
 
-texture makeTexture(unsigned width, unsigned height, unsigned channels, const unsigned char * pixels)
+texture makeTexture(unsigned width, unsigned height, unsigned channels, const unsigned char *pixels)
 {
 	GLenum oglFormat = GL_RGBA;
-	switch (channels) {
+	switch (channels)
+	{
 	case 1:
 		oglFormat = GL_RED;
 		break;
@@ -126,23 +127,24 @@ texture makeTexture(unsigned width, unsigned height, unsigned channels, const un
 		oglFormat = GL_RGBA;
 		break;
 	default:
-		//TODO: fatal error, halt the program
+		// ToDo: error handling
 		break;
 	}
 
-	//generating and binding the texture
 	texture tex = { 0, width, height, channels };
+
+	// generate and bind texture
 	glGenTextures(1, &tex.handle);
 	glBindTexture(GL_TEXTURE_2D, tex.handle);
 
-	//buffer/send the actual data
-	glTexImage2D(GL_TEXTURE, 0, oglFormat, width, height, 0, oglFormat, GL_UNSIGNED_BYTE, pixels);
+	// buffer/send actual data
+	glTexImage2D(GL_TEXTURE_2D, 0, oglFormat, width, height, 0, oglFormat, GL_UNSIGNED_BYTE, pixels);
 
-	//describe how teh textuer will be used
+	// describe how the texture will be used
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	//undbind
+	// unbind
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	return tex;

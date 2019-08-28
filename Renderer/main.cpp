@@ -107,9 +107,9 @@ int main() {
 
 	vertex triVerts[] =
 	{
-		{{-.5f,-.5f,0,1},{ 1.0, 0.0, 0.0, 1}, {0.f,0.f}},
-		{{.5f,-.5f,0,1},{ 0.0, 1.0, 0.0, 1}, {1.f,0.f}},
-		{{0,.5f,0,1},{ 0, 0.0, 1.0, 1}, {.5f,.1f}}
+		{ {-0.5f, -0.5f, 0, 1}, {0, 1, 0, 1}, {0.f, 0.f} },
+		{ {0.5f,  -0.5f, 0, 1}, {1, 0, 0, 1}, {1.f, 0.f} },
+		{ {0,      0.5f, 0, 1}, {0, 0, 1, 1}, {.5f, 1.f} }
 	};
 
 
@@ -156,12 +156,12 @@ int main() {
 	glm::mat4 triModel = glm::identity<glm::mat4>();
 	glm::mat4 quadModel = glm::identity<glm::mat4>();
 	glm::mat4 camProj = glm::perspective(glm::radians(45.f), 640.f / 480.f, 0.1f, 100.f);
-	glm::mat4 camView = glm::lookAt(glm::vec3(0, 0, -10), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	glm::mat4 camView = glm::lookAt(glm::vec3(0, 0, -3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
 	setUniform(basicShader, 0, camProj);
 	setUniform(basicShader, 1, camView);
 	setUniform(basicShader, 2, triModel);
-	setUniform(basicShader, 2, texture, 0);
+	setUniform(basicShader, 3, texture, 0);
 
 	int i = 0;
 	while (!game.shouldClose()) {
@@ -170,8 +170,8 @@ int main() {
 
 		//assert(glGetError() == GL_NO_ERROR);
 
-		triModel = glm::rotate(triModel, glm::radians(5.f), glm::vec3(0, 1, 0));
-		setUniform(basicShader, 2, triModel);
+		//triModel = glm::rotate(triModel, glm::radians(5.f), glm::vec3(0, 1, 0));
+		//setUniform(basicShader, 2, triModel);
 
 
 		/*if (i > 50) {
