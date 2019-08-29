@@ -9,13 +9,15 @@
 #include "algorithm"
 #include <vector>
 #include <iostream>
-
-
+#include <string>
+#include <fstream>
+#include <iostream>
 
 
 float randFloat();
 vertex* convertVertices(std::vector<tinyobj::real_t> verticies);
 unsigned int* convertIndices(std::vector<tinyobj::index_t> indices);
+std::string load(std::string fileName);
 
 int main() {
 	context game;
@@ -30,66 +32,71 @@ int main() {
 #endif
 
 	//std::string inputfile = "cube.obj";
-	//tinyobj::attrib_t attrib;
-	//std::vector<tinyobj::shape_t> shapes;
-	//std::vector<tinyobj::material_t> materials;
+	std::string inputfile = "soulspear.obj";
+	//std::string inputfile = "tri.obj";
+	tinyobj::attrib_t attrib;
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
 
-	//std::string warn;
-	//std::string err;
+	std::string warn;
+	std::string err;
 
-	//bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, inputfile.c_str());
+	bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, inputfile.c_str());
 
-	//if (!warn.empty()) {
-	//	std::cout << warn << std::endl;
-	//}
+	if (!warn.empty()) {
+		std::cout << warn << std::endl;
+	}
 
-	//if (!err.empty()) {
-	//	std::cerr << err << std::endl;
-	//}
+	if (!err.empty()) {
+		std::cerr << err << std::endl;
+	}
 
-	//if (!ret) {
-	//	exit(1);
-	//}
+	if (!ret) {
+		exit(1);
+	}
 
-	//std::vector<vertex> objVerts;
-	//std::vector<unsigned int> objIndices;
+	std::vector<vertex> objVerts;
+	std::vector<unsigned int> objIndices;
 
-	//// Loop over shapes
-	//for (size_t s = 0; s < shapes.size(); s++) {
+	unsigned ind[100000];
 
+	for (size_t i = 0; i < 100000; i++)
+	{
+		ind[i] = i;
+	}
+	
+	// Loop over faces(polygon)
+	size_t index_offset = 0;
+	for (size_t f = 0; f < shapes[0].mesh.num_face_vertices.size(); f++) {
+		int fv = shapes[0].mesh.num_face_vertices[f];
 
-	//	// Loop over faces(polygon)
-	//	size_t index_offset = 0;
-	//	for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
-	//		int fv = shapes[s].mesh.num_face_vertices[f];
+		// Loop over vertices in the face.
+		for (size_t v = 0; v < fv; v++) {
+			// access to vertex
+			tinyobj::index_t idx = shapes[0].mesh.indices[index_offset + v];
+			tinyobj::real_t vx = attrib.vertices[3 * idx.vertex_index + 0];
+			tinyobj::real_t vy = attrib.vertices[3 * idx.vertex_index + 1];
+			tinyobj::real_t vz = attrib.vertices[3 * idx.vertex_index + 2];
+			tinyobj::real_t nx = attrib.normals[3 * idx.normal_index + 0];
+			tinyobj::real_t ny = attrib.normals[3 * idx.normal_index + 1];
+			tinyobj::real_t nz = attrib.normals[3 * idx.normal_index + 2];
+			tinyobj::real_t tx = attrib.texcoords[2 * idx.texcoord_index + 0];
+			tinyobj::real_t ty = attrib.texcoords[2 * idx.texcoord_index + 1];
 
-	//		// Loop over vertices in the face.
-	//		for (size_t v = 0; v < fv; v++) {
-	//			// access to vertex
-	//			tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
-	//			tinyobj::real_t vx = attrib.vertices[3 * idx.vertex_index + 0];
-	//			tinyobj::real_t vy = attrib.vertices[3 * idx.vertex_index + 1];
-	//			tinyobj::real_t vz = attrib.vertices[3 * idx.vertex_index + 2];
-	//			tinyobj::real_t nx = attrib.normals[3 * idx.normal_index + 0];
-	//			tinyobj::real_t ny = attrib.normals[3 * idx.normal_index + 1];
-	//			tinyobj::real_t nz = attrib.normals[3 * idx.normal_index + 2];
-	//			tinyobj::real_t tx = attrib.texcoords[2 * idx.texcoord_index + 0];
-	//			tinyobj::real_t ty = attrib.texcoords[2 * idx.texcoord_index + 1];
+			objVerts.emplace_back(vertex{ {vx, vy, vz, 1.f},{ randFloat(), randFloat(), randFloat(), 1 }, {tx,ty} });
+			objIndices.emplace_back((unsigned int)idx.vertex_index);
 
-	//			objVerts.emplace_back(vertex{ {vx, vy, vz, 1.f} });
-	//			objIndices.emplace_back((unsigned int)idx.vertex_index);
+			// Optional: vertex colors
+			// tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];
+			// tinyobj::real_t green = attrib.colors[3*idx.vertex_index+1];
+			// tinyobj::real_t blue = attrib.colors[3*idx.vertex_index+2];
+		}
+		index_offset += fv;
 
-	//			// Optional: vertex colors
-	//			// tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];
-	//			// tinyobj::real_t green = attrib.colors[3*idx.vertex_index+1];
-	//			// tinyobj::real_t blue = attrib.colors[3*idx.vertex_index+2];
-	//		}
-	//		index_offset += fv;
-
-	//		// per-face material
-	//		shapes[s].mesh.material_ids[f];
-	//	}
-	//}
+		// per-face material
+		shapes[0].mesh.material_ids[f];
+	}
+	
 
 	//std::cout << attrib.vertices.size() << std::endl; //24
 	//std::cout << shapes[0].mesh.indices.size() << std::endl; //36
@@ -100,8 +107,8 @@ int main() {
 	//}
 	//vertex* a = convertVertices(attrib.vertices);
 	//unsigned int* b = convertIndices(shapes[0].mesh.indices);
-	////geometry cube = makeGeometry(convertVertices(attrib.vertices), attrib.vertices.size() / 3, (unsigned int *)shapes[0].mesh.indices.data(), shapes[0].mesh.indices.size());
-	//geometry cube = makeGeometry(objVerts.data(), objVerts.size(), objIndices.data(), objIndices.size());
+	//geometry cube = makeGeometry(convertVertices(attrib.vertices), attrib.vertices.size() / 3, (unsigned int *)shapes[0].mesh.indices.data(), shapes[0].mesh.indices.size());
+	geometry cube = makeGeometry(objVerts.data(), objVerts.size(), ind, shapes[0].mesh.indices.size());
 	//delete[] a;
 
 
@@ -112,7 +119,7 @@ int main() {
 		{ {0,      0.5f, 0, 1}, {0, 0, 1, 1}, {.5f, 1.f} }
 	};
 
-
+	
 
 	unsigned int triIndices[] = { 0,1,2 };
 
@@ -120,43 +127,27 @@ int main() {
 
 	texture texture = loadTexture("soulspear_diffuse.tga");
 
-	/*vertex quadVerts[] =
+	vertex quadVerts[] =
 	{
-		{{-1.0f,-1.0f,0,1},{ 1.0, 0.0, 0.0, 1}},
-		{{-1.0f,1.0f,0,1 },{ 0.0, 1.0, 0.0, 1}},
-		{{1.0f,1.0f,0,1},{ 0, 0.0, 1.0, 1}},
-		{{1.0f,-1.0f,0,1},{0, .5f, 0, 1}}
+		{{-1.0f,-1.0f,0,1},{ 1.0, 0.0, 0.0, 1},{0.f,0.f}},
+		{{-1.0f,1.0f,0,1 },{ 0.0, 1.0, 0.0, 1},{1.0,0.f}},
+		{{1.0f,1.0f,0,1},{ 0, 0.0, 1.0, 1},{1.f,1.f,}},
+		{{1.0f,-1.0f,0,1},{0, .5f, 0, 1},{0.f,1.f}}
 	};
 
 	unsigned int quadIndicies[] = { 0,1,2,0,2,3 };
 
-	geometry quad = makeGeometry(quadVerts, 4, quadIndicies, 6);*/
+	geometry quad = makeGeometry(quadVerts, 4, quadIndicies, 6);
 
-	const char * basicVert =
-		"#version 430\n"
-		"layout (location = 0) in vec4 position;\n"
-		"layout (location = 1) in vec4 vertColor;\n"
-		"layout (location = 2) in vec2 uv;\n"
-		"layout (location = 0) uniform mat4 proj;\n"
-		"layout (location = 1) uniform mat4 view;\n"
-		"layout (location = 2) uniform mat4 model;\n"
-		"out vec4 vColor;\n"
-		"out vec2 vUV;\n"
-		"void main() {gl_Position = proj * view * model * position; vColor = vertColor; vUV = uv;}";
 
-	const char * basicFrag =
-		"#version 430\n"
-		"layout (location = 3) uniform sampler2D albedo; \n"
-		"in vec2 vUV;\n"
-		"out vec4 fragColor;\n"
-		"void main() {fragColor = texture(albedo, vUV);}";
-
-	shader basicShader = makeShader(basicVert, basicFrag);
+	shader basicShader = makeShader(load("vert.txt").c_str(), load("frag.txt").c_str());
+	//shader basicShader = makeShader(load("2.txt").c_str(), load("1.txt").c_str());
+	//shader basicShader = makeShader(load("basicVert.txt").c_str(), load("basicFrag.txt").c_str());
 
 	glm::mat4 triModel = glm::identity<glm::mat4>();
 	glm::mat4 quadModel = glm::identity<glm::mat4>();
 	glm::mat4 camProj = glm::perspective(glm::radians(45.f), 640.f / 480.f, 0.1f, 100.f);
-	glm::mat4 camView = glm::lookAt(glm::vec3(0, 0, -3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	glm::mat4 camView = glm::lookAt(glm::vec3(0, 0, -5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
 	setUniform(basicShader, 0, camProj);
 	setUniform(basicShader, 1, camView);
@@ -169,9 +160,9 @@ int main() {
 		game.clear();
 
 		//assert(glGetError() == GL_NO_ERROR);
+		triModel = glm::rotate(triModel, glm::radians(.5f), glm::vec3(0, 1, 0));
 
-		//triModel = glm::rotate(triModel, glm::radians(5.f), glm::vec3(0, 1, 0));
-		//setUniform(basicShader, 2, triModel);
+		setUniform(basicShader, 2, triModel);
 
 
 		/*if (i > 50) {
@@ -230,8 +221,14 @@ int main() {
 
 	*/	
 
-		draw(basicShader, triangle);
+		//draw(basicShader, triangle);
+		//draw(basicShader, quad);
+		draw(basicShader,cube);
 	}
+
+	freeGeometry(triangle);
+	freeGeometry(quad);
+	freeShader(basicShader);
 	game.term();
 	return 0;
 }
@@ -265,4 +262,22 @@ unsigned int* convertIndices(std::vector<tinyobj::index_t> indices)
 		b[i] = indices[i].vertex_index;
 	}
 	return b;
+}
+
+
+
+ std::string load(std::string fileName)
+{
+	std::ifstream fileIn;
+	fileIn.open(fileName, std::ios_base::in);
+
+	std::string ret = "";
+	std::string buffer;
+	while (std::getline(fileIn, buffer))
+	{
+		ret += (buffer + "\n").c_str();
+	}
+
+	fileIn.close();
+	return ret;
 }
