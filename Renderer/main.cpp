@@ -2,10 +2,13 @@
 #include "render.h"
 #include "glm/glm.hpp"
 #include "glm/ext.hpp"
+#include "glfw/glfw3.h" 
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 #include "tiny_obj_loader.h"
 
 #include "Windows.h"
+#include "time.h"
+#include "math.h"
 #include "algorithm"
 #include <vector>
 #include <iostream>
@@ -20,8 +23,10 @@ unsigned int* convertIndices(std::vector<tinyobj::index_t> indices);
 std::string load(std::string fileName);
 
 int main() {
+	int w = 640;
+	int h = 480;
 	context game;
-	game.init(640, 480, "Source3");
+	game.init(w, h, "Source3");
 
 #ifdef _DEBUG
 	glEnable(GL_DEBUG_OUTPUT);
@@ -83,7 +88,7 @@ int main() {
 			tinyobj::real_t tx = attrib.texcoords[2 * idx.texcoord_index + 0];
 			tinyobj::real_t ty = attrib.texcoords[2 * idx.texcoord_index + 1];
 
-			objVerts.emplace_back(vertex{ {vx, vy, vz, 1.f},{ randFloat(), randFloat(), randFloat(), 1 }, {tx,ty} });
+			objVerts.emplace_back(vertex{ {vx, vy, vz, 1.f},{ randFloat(), randFloat(), randFloat(), 1 }, {tx,ty}, {nx,ny,nz,0} });
 			objIndices.emplace_back((unsigned int)idx.vertex_index);
 
 			// Optional: vertex colors
@@ -114,9 +119,9 @@ int main() {
 
 	vertex triVerts[] =
 	{
-		{ {-0.5f, -0.5f, 0, 1}, {0, 1, 0, 1}, {0.f, 0.f} },
-		{ {0.5f,  -0.5f, 0, 1}, {1, 0, 0, 1}, {1.f, 0.f} },
-		{ {0,      0.5f, 0, 1}, {0, 0, 1, 1}, {.5f, 1.f} }
+		{ {-0.5f, -0.5f, 0, 1}, {0, 1, 0, 1}, {0.f, 0.f}, {0,0,1,0} },
+		{ {0.5f,  -0.5f, 0, 1}, {1, 0, 0, 1}, {1.f, 0.f}, {0,0,1,0} },
+		{ {0,      0.5f, 0, 1}, {0, 0, 1, 1}, {.5f, 1.f}, {0,0,1,0} }
 	};
 
 	
@@ -143,16 +148,38 @@ int main() {
 	shader basicShader = makeShader(load("vert.txt").c_str(), load("frag.txt").c_str());
 	//shader basicShader = makeShader(load("2.txt").c_str(), load("1.txt").c_str());
 	//shader basicShader = makeShader(load("basicVert.txt").c_str(), load("basicFrag.txt").c_str());
+	shader lightShad = makeShader(load("lightVert.txt").c_str(), load("lightFrag.txt").c_str());
 
 	glm::mat4 triModel = glm::identity<glm::mat4>();
 	glm::mat4 quadModel = glm::identity<glm::mat4>();
 	glm::mat4 camProj = glm::perspective(glm::radians(45.f), 640.f / 480.f, 0.1f, 100.f);
-	glm::mat4 camView = glm::lookAt(glm::vec3(0, 0, -5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	glm::mat4 camView = glm::lookAt(glm::vec3(0, 0, -10), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
 	setUniform(basicShader, 0, camProj);
 	setUniform(basicShader, 1, camView);
 	setUniform(basicShader, 2, triModel);
 	setUniform(basicShader, 3, texture, 0);
+
+	light sun;
+	sun.dir = glm::vec4{ 0, 0, 1, 1 };
+	sun.col = glm::vec4{ 1, 1, 1, 1 };
+
+	setUniform(lightShad, 0, camProj);
+	setUniform(lightShad, 1, camView);
+	setUniform(lightShad, 2, triModel);
+
+	setUniform(lightShad, 3, texture, 0);
+	setUniform(lightShad, 4, sun.dir);
+	setUniform(lightShad, 5, sun.col);
+
+	GLdouble x = 0;
+	GLdouble y = 0;
+	int shadowMax = 4;
+	float xDif;
+	float yDif;
+	float xVal;
+	float yVal;
+
 
 	int i = 0;
 	while (!game.shouldClose()) {
@@ -162,7 +189,7 @@ int main() {
 		//assert(glGetError() == GL_NO_ERROR);
 		triModel = glm::rotate(triModel, glm::radians(.5f), glm::vec3(0, 1, 0));
 
-		setUniform(basicShader, 2, triModel);
+		setUniform(lightShad, 2, triModel);
 
 
 		/*if (i > 50) {
@@ -223,12 +250,13 @@ int main() {
 
 		//draw(basicShader, triangle);
 		//draw(basicShader, quad);
-		draw(basicShader,cube);
+		draw(lightShad,cube);
 	}
 
 	freeGeometry(triangle);
 	freeGeometry(quad);
 	freeShader(basicShader);
+	freeShader(lightShad);
 	game.term();
 	return 0;
 }

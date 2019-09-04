@@ -20,6 +20,14 @@ bool context::init(int width, int height, const char * title)
 	std::cout << "GLSL: " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION) << "\n";
 
 	glClearColor(.25f, .25f, .25f, 1.0f);
+
+	glEnable(GL_BLEND); // two textures blend together (good for transparency)
+	glEnable(GL_DEPTH_TEST); // determine whether parts of object are visible
+	glEnable(GL_CULL_FACE); // skip faces that are away from us (optimization)
+
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // how to blend, in respect to alpha
+	glDepthFunc(GL_LEQUAL);  // if z values are <= other z vals, that object gets rendered in front
+
 	return true;
 }
 

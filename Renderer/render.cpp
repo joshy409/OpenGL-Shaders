@@ -28,9 +28,11 @@ geometry makeGeometry(vertex * verts, size_t vertCount, unsigned * indices, size
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)0);
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(sizeof(vertex::pos)));
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(sizeof(vertex::pos) + sizeof(vertex::color)));
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(sizeof(vertex::pos) + sizeof(vertex::color) + sizeof(vertex::uv)));
 
 	//unbind buffers (in a SPECIFIC order)
 	glBindVertexArray(0);
@@ -107,6 +109,16 @@ void setUniform(const shader & shad, GLuint location, const texture & value, int
 
 	//assign the uniform to the shader
 	glProgramUniform1i(shad.program, location, textureSlot);
+}
+
+void setUniform(const shader & shad, GLuint location, const glm::vec3 & value)
+{
+	glProgramUniform3fv(shad.program, location, 1, glm::value_ptr(value));
+}
+
+void setUniform(const shader & shad, GLuint location, const glm::vec4 & value)
+{
+	glProgramUniform4fv(shad.program, location, 1, glm::value_ptr(value));
 }
 
 texture makeTexture(unsigned width, unsigned height, unsigned channels, const unsigned char *pixels)
